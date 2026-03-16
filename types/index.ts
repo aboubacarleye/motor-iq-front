@@ -21,3 +21,12 @@ export interface Claim {
   fraud_risk_score: number;
   ai_analysis?: string;
 }
+
+export type RootStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+  Dashboard: undefined;
+  ReportAccident: undefined;
+  ClaimsTracking: undefined;
+  Profile: undefined;
+};

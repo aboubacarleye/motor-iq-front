@@ -1,9 +1,13 @@
 import React from 'react';
 import { View, Text, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types';
+
+type DashboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Dashboard'>;
 
 export default function DashboardScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<DashboardScreenNavigationProp>();
 
   return (
     <View style={{ padding: 20 }}>
