@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import ReportAccidentScreen from '../screens/ReportAccidentScreen';
+import AssistantChatScreen from '../screens/AssistantChatScreen';
 import ClaimsTrackingScreen from '../screens/ClaimsTrackingScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import UpgradeInsuranceScreen from '../screens/UpgradeInsuranceScreen';
@@ -22,6 +23,7 @@ function HomeStackScreen() {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="Dashboard" component={DashboardScreen} />
+      <HomeStack.Screen name="AssistantChat" component={AssistantChatScreen} />
       <HomeStack.Screen name="ReportAccident" component={ReportAccidentScreen} />
       <HomeStack.Screen name="UpgradeInsurance" component={UpgradeInsuranceScreen} />
     </HomeStack.Navigator>

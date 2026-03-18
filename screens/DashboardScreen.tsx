@@ -46,6 +46,15 @@ export default function DashboardScreen() {
           <Text style={styles.primaryButtonText}>Report an Incident</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.magicButton}
+          activeOpacity={0.95}
+          onPress={() => navigation.navigate('AssistantChat')}
+        >
+          <Text style={styles.magicButtonTitle}>Have an accident?</Text>
+          <Text style={styles.magicButtonSubtitle}>Chat with our agent to guide you</Text>
+        </TouchableOpacity>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Active Policy</Text>
           <PolicyCard policy={profile.policy} />
@@ -158,6 +167,24 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  magicButton: {
+    backgroundColor: '#0B1120',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#111827',
+  },
+  magicButtonTitle: {
+    color: '#F9FAFB',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  magicButtonSubtitle: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    marginTop: 4,
   },
   section: {
     marginBottom: 24,

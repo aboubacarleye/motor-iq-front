@@ -39,7 +39,8 @@ export interface ExtendedClaim extends Claim {
 interface ClaimsState {
   profile: DriverProfile;
   claims: ExtendedClaim[];
-  addClaim: (claim: Omit<ExtendedClaim, 'id' | 'claimId' | 'timeline'>) => void;
+  addClaim: (claim: Omit<ExtendedClaim, 'id' | 'claimId' | 'timeline'>) => ExtendedClaim;
+  updateClaim: (id: number, patch: Partial<ExtendedClaim>) => void;
   updateProfile: (partial: Partial<DriverProfile>) => void;
   addVehicle: (vehicle: Omit<Vehicle, 'id'>) => Vehicle;
   theme: 'light' | 'dark';
@@ -117,7 +118,8 @@ const useClaimsStore = create<ClaimsState>()(
       ],
     },
   ],
-  addClaim: (newClaim) =>
+  addClaim: (newClaim) => {
+    let createdClaim: ExtendedClaim | null = null;
     set((state) => {
       const id = nextId++;
       const claimId = `CLM-${1000 + id}`;
@@ -129,18 +131,28 @@ const useClaimsStore = create<ClaimsState>()(
         { label: 'Completed', completed: false },
       ];
 
+      createdClaim = {
+        ...(newClaim as ExtendedClaim),
+        id,
+        claimId,
+        timeline,
+      };
+
       return {
         claims: [
           {
-            ...newClaim,
-            id,
-            claimId,
-            timeline,
+            ...createdClaim,
           },
           ...state.claims,
         ],
       };
-    }),
+    });
+    return createdClaim as ExtendedClaim;
+  },
+  updateClaim: (id, patch) =>
+    set((state) => ({
+      claims: state.claims.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    })),
   updateProfile: (partial) =>
     set((state) => ({
       profile: {

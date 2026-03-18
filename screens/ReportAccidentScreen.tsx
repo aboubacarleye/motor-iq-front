@@ -13,7 +13,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
 import useClaimsStore from '../stores/claimsStore';
-import AIAssistantPanel from '../components/AIAssistantPanel';
+import { Modal } from 'react-native';
+import AssistantFab from '../components/AssistantFab';
 
 type NavProp = StackNavigationProp<RootStackParamList, 'ReportAccident'>;
 
@@ -22,6 +23,7 @@ type Step = 1 | 2 | 3 | 4 | 5 | 6;
 export default function ReportAccidentScreen() {
   const navigation = useNavigation<NavProp>();
   const addClaim = useClaimsStore((state) => state.addClaim);
+  const updateClaim = useClaimsStore((state) => state.updateClaim);
   const vehicles = useClaimsStore((state) => state.profile.vehicles);
   const addVehicle = useClaimsStore((state) => state.addVehicle);
 
@@ -44,6 +46,9 @@ export default function ReportAccidentScreen() {
   const [hasVoiceNote, setHasVoiceNote] = useState(false);
   const [hasPoliceReport, setHasPoliceReport] = useState(false);
   const [acceptedDeclaration, setAcceptedDeclaration] = useState(false);
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [submittedClaimId, setSubmittedClaimId] = useState<string | null>(null);
 
   const goNext = () => {
     if (step < 6) {
@@ -79,16 +84,27 @@ export default function ReportAccidentScreen() {
       return;
     }
     const vehicle = vehicles.find((v) => v.id === selectedVehicleId);
-    addClaim({
+    const created = addClaim({
       description,
       status: 'Submitted',
       date_created: date,
-      fraud_risk_score: 0,
+      fraud_risk_score: hasPoliceReport && images.length ? 8 : 22,
       vehicleName: vehicle ? `${vehicle.make} ${vehicle.model}` : 'Unknown vehicle',
       submissionDate: date,
       images,
     });
-    navigation.navigate('ClaimsTracking');
+    setSubmittedClaimId(created.claimId);
+    setShowSubmitModal(true);
+
+    // Simulated backend progression
+    setTimeout(() => {
+      updateClaim(created.id, {
+        status: 'Under Review',
+        timeline: created.timeline.map((s, idx) =>
+          idx <= 1 ? { ...s, completed: true } : s,
+        ),
+      });
+    }, 1400);
   };
 
   const renderStepIndicator = () => (
@@ -99,13 +115,11 @@ export default function ReportAccidentScreen() {
   );
 
   const renderPrimaryButtonLabel = () => {
-    if (step === 5) return 'Submit Claim';
+    if (step === 6) return 'Submit Claim';
     return 'Next';
   };
 
   const renderContent = () => {
-    const baseContext = `report-step-${step}`;
-
     if (step === 1) {
       return (
         <View>
@@ -141,7 +155,6 @@ export default function ReportAccidentScreen() {
               </TouchableOpacity>
             );
           })}
-          <AIAssistantPanel context={baseContext} />
         </View>
       );
     }
@@ -181,55 +194,15 @@ export default function ReportAccidentScreen() {
             })}
             <TouchableOpacity
               style={[styles.vehicleCard, styles.addVehicleCard]}
-              onPress={() => setIsAddingVehicle(true)}
+              onPress={() => {
+                setIsAddingVehicle(true);
+                setShowVehicleModal(true);
+              }}
             >
               <Text style={styles.addVehiclePlus}>+</Text>
               <Text style={styles.addVehicleText}>Add new vehicle</Text>
             </TouchableOpacity>
           </ScrollView>
-          {isAddingVehicle && (
-            <View style={styles.newVehicleForm}>
-              <Text style={styles.inputLabel}>New vehicle make</Text>
-              <TextInput
-                style={styles.input}
-                value={newVehicleMake}
-                onChangeText={setNewVehicleMake}
-              />
-              <Text style={styles.inputLabel}>Model</Text>
-              <TextInput
-                style={styles.input}
-                value={newVehicleModel}
-                onChangeText={setNewVehicleModel}
-              />
-              <Text style={styles.inputLabel}>License plate</Text>
-              <TextInput
-                style={styles.input}
-                value={newVehiclePlate}
-                onChangeText={setNewVehiclePlate}
-              />
-              <TouchableOpacity
-                style={styles.saveVehicleButton}
-                onPress={() => {
-                  if (!newVehicleMake || !newVehicleModel || !newVehiclePlate) {
-                    return;
-                  }
-                  const created = addVehicle({
-                    make: newVehicleMake,
-                    model: newVehicleModel,
-                    year: new Date().getFullYear(),
-                    license_plate: newVehiclePlate,
-                  });
-                  setSelectedVehicleId(created.id);
-                  setIsAddingVehicle(false);
-                  setNewVehicleMake('');
-                  setNewVehicleModel('');
-                  setNewVehiclePlate('');
-                }}
-              >
-                <Text style={styles.saveVehicleText}>Save vehicle</Text>
-              </TouchableOpacity>
-            </View>
-          )}
           <Text style={styles.inputLabel}>Date</Text>
           <TextInput
             style={styles.input}
@@ -250,7 +223,6 @@ export default function ReportAccidentScreen() {
             multiline
             placeholder="E.g. Another vehicle backed into the front bumper while exiting the parking spot."
           />
-          <AIAssistantPanel context={baseContext} />
         </View>
       );
     }
@@ -288,7 +260,6 @@ export default function ReportAccidentScreen() {
             onChangeText={setDamageDescription}
             multiline
           />
-          <AIAssistantPanel context={baseContext} />
         </View>
       );
     }
@@ -314,7 +285,6 @@ export default function ReportAccidentScreen() {
             </View>
           </View>
           <Text style={styles.locationText}>{locationLabel}</Text>
-          <AIAssistantPanel context={baseContext} />
         </View>
       );
     }
@@ -358,7 +328,6 @@ export default function ReportAccidentScreen() {
               {isRecording ? 'Stop recording' : 'Voice input'}
             </Text>
           </TouchableOpacity>
-          <AIAssistantPanel context={baseContext} />
         </View>
       );
     }
@@ -389,6 +358,22 @@ export default function ReportAccidentScreen() {
           </ScrollView>
 
           <View style={styles.divider} />
+
+          <View style={styles.reviewHeaderRow}>
+            <Text style={styles.reviewTitle}>Police report</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.policeCard}
+            activeOpacity={0.9}
+            onPress={() => setHasPoliceReport(true)}
+          >
+            <Text style={styles.policeTitle}>
+              {hasPoliceReport ? 'Police report added' : 'Tap to upload or scan report'}
+            </Text>
+            <Text style={styles.policeSubtitle}>
+              PDF / JPG / PNG (simulated)
+            </Text>
+          </TouchableOpacity>
 
           <View style={styles.reviewHeaderRow}>
             <Text style={styles.reviewTitle}>Incident details</Text>
@@ -430,7 +415,6 @@ export default function ReportAccidentScreen() {
             legal action.
           </Text>
         </View>
-        <AIAssistantPanel context={baseContext} />
       </View>
     );
   };
@@ -456,6 +440,81 @@ export default function ReportAccidentScreen() {
           <Text style={styles.primaryButtonText}>{renderPrimaryButtonLabel()}</Text>
         </TouchableOpacity>
       </View>
+
+      <AssistantFab context={`report-step-${step}`} label="Assistant" />
+
+      <Modal visible={showVehicleModal} transparent animationType="fade" onRequestClose={() => setShowVehicleModal(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add new vehicle</Text>
+              <TouchableOpacity onPress={() => setShowVehicleModal(false)}>
+                <Text style={styles.modalClose}>Close</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.inputLabel}>Make</Text>
+            <TextInput style={styles.input} value={newVehicleMake} onChangeText={setNewVehicleMake} />
+            <Text style={styles.inputLabel}>Model</Text>
+            <TextInput style={styles.input} value={newVehicleModel} onChangeText={setNewVehicleModel} />
+            <Text style={styles.inputLabel}>License plate</Text>
+            <TextInput style={styles.input} value={newVehiclePlate} onChangeText={setNewVehiclePlate} />
+
+            <View style={styles.modalFooterRow}>
+              <TouchableOpacity
+                style={styles.modalSecondary}
+                onPress={() => {
+                  setShowVehicleModal(false);
+                  setIsAddingVehicle(false);
+                }}
+              >
+                <Text style={styles.modalSecondaryText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalPrimary}
+                onPress={() => {
+                  if (!newVehicleMake || !newVehicleModel || !newVehiclePlate) return;
+                  const created = addVehicle({
+                    make: newVehicleMake,
+                    model: newVehicleModel,
+                    year: new Date().getFullYear(),
+                    license_plate: newVehiclePlate,
+                  });
+                  setSelectedVehicleId(created.id);
+                  setNewVehicleMake('');
+                  setNewVehicleModel('');
+                  setNewVehiclePlate('');
+                  setIsAddingVehicle(false);
+                  setShowVehicleModal(false);
+                }}
+              >
+                <Text style={styles.modalPrimaryText}>Save vehicle</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showSubmitModal} transparent animationType="fade" onRequestClose={() => setShowSubmitModal(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.successCard}>
+            <Text style={styles.successTitle}>Claim recorded & submitted</Text>
+            <Text style={styles.successText}>
+              Your claim {submittedClaimId ? `(${submittedClaimId}) ` : ''}has been sent successfully.
+              Your insurance will contact you shortly with the next steps.
+            </Text>
+            <TouchableOpacity
+              style={styles.modalPrimary}
+              onPress={() => {
+                setShowSubmitModal(false);
+                navigation.navigate('ClaimsTracking');
+              }}
+            >
+              <Text style={styles.modalPrimaryText}>Go to claims</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -608,6 +667,103 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     color: '#FFFFFF',
+  },
+  policeCard: {
+    marginTop: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    padding: 14,
+  },
+  policeTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  policeSubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(2, 6, 23, 0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 520,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  modalClose: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  modalFooterRow: {
+    flexDirection: 'row',
+    marginTop: 10,
+    columnGap: 10,
+  },
+  modalSecondary: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalSecondaryText: {
+    color: '#111827',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalPrimary: {
+    flex: 1,
+    borderRadius: 12,
+    backgroundColor: '#111827',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalPrimaryText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  successCard: {
+    width: '100%',
+    maxWidth: 520,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+  },
+  successTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  successText: {
+    fontSize: 13,
+    color: '#4B5563',
+    lineHeight: 18,
+    marginBottom: 14,
   },
   uploadCard: {
     backgroundColor: '#F9FAFB',

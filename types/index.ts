@@ -29,4 +29,5 @@ export type RootStackParamList = {
   ReportAccident: undefined;
   ClaimsTracking: undefined;
   Profile: undefined;
+  AssistantChat: undefined;
 };
