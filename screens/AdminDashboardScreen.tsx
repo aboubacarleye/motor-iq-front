@@ -243,7 +243,22 @@ export default function AdminDashboardScreen() {
                   <Text style={styles.modalMeta}>Date: {selectedClaim.submissionDate}</Text>
                   <Text style={styles.modalMeta}>AI Score: {selectedClaim.fraud_risk_score}/100</Text>
                   <Text style={styles.modalMeta}>AI Explanation: {selectedClaim.fraud_risk_score > 70 ? "High risk detected by AI." : selectedClaim.fraud_risk_score > 30 ? "Medium risk." : "Low risk."}</Text>
-                  {/* Add more details if available */}
+                  {/* Affichage audio, image, GPS */}
+                  {selectedClaim.audioUrl && (
+                    <Text style={styles.modalMeta}>
+                      Audio: <Text style={{ color: '#2563EB', textDecorationLine: 'underline' }} onPress={() => window.open(selectedClaim.audioUrl, '_blank')}>Play audio</Text>
+                    </Text>
+                  )}
+                  {selectedClaim.imageUrl && (
+                    <Text style={styles.modalMeta}>
+                      Image: <Text style={{ color: '#2563EB', textDecorationLine: 'underline' }} onPress={() => window.open(selectedClaim.imageUrl, '_blank')}>View image</Text>
+                    </Text>
+                  )}
+                  {selectedClaim.gpsCoordinates && (
+                    <Text style={styles.modalMeta}>
+                      GPS: {selectedClaim.gpsCoordinates.latitude}, {selectedClaim.gpsCoordinates.longitude}
+                    </Text>
+                  )}
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16 }}>
                     <TouchableOpacity
                       style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#2563EB', borderRadius: 6, paddingVertical: 8, paddingHorizontal: 14 }}
