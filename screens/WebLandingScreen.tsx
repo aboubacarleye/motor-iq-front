@@ -1,20 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useNavigation } from '@react-navigation/native';
-
-type Nav = StackNavigationProp<any>;
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native-web';
+import { useLocation } from 'wouter';
 
 export default function WebLandingScreen() {
-  const navigation = useNavigation<Nav>();
+  const [, setLocation] = useLocation();
   const { width } = useWindowDimensions();
   const isMobile = width < 700;
 
   const goToAdmin = () => {
-    navigation.navigate('Admin' as never);
+    setLocation('/admin');
   };
   const goToDriver = () => {
-    navigation.navigate('Main' as never);
+    setLocation('/app');
   };
 
   return (

@@ -7,21 +7,17 @@ import {
   StyleSheet,
   ScrollView,
   Image,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../types';
+} from 'react-native-web';
+import { Platform } from 'react-native-web';
+import { useLocation } from 'wouter';
 import useClaimsStore from '../stores/claimsStore';
-import { Modal } from 'react-native';
+import { Modal } from 'react-native-web';
 import AssistantFab from '../components/AssistantFab';
-
-type NavProp = StackNavigationProp<RootStackParamList, 'ReportAccident'>;
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
 export default function ReportAccidentScreen() {
-  const navigation = useNavigation<NavProp>();
+  const [, setLocation] = useLocation();
   const addClaim = useClaimsStore((state) => state.addClaim);
   const updateClaim = useClaimsStore((state) => state.updateClaim);
   const vehicles = useClaimsStore((state) => state.profile.vehicles);
@@ -60,23 +56,33 @@ export default function ReportAccidentScreen() {
 
   const goBack = () => {
     if (step === 1) {
-      navigation.goBack();
+      setLocation('/app');
     } else {
       setStep((s) => (s - 1) as Step);
     }
   };
 
   const pickImage = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
+    if (Platform.OS === 'web') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+      input.onchange = async () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          setImages((prev) => [...prev, dataUrl]);
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
-      quality: 0.7,
-    });
-    if (!result.canceled && result.assets?.length) {
-      setImages((prev) => [...prev, result.assets[0].uri]);
-    }
+
+    // Fallback: non-web platforms not supported in web-only build
   };
 
   const handleSubmit = () => {
@@ -507,7 +513,7 @@ export default function ReportAccidentScreen() {
               style={styles.modalPrimary}
               onPress={() => {
                 setShowSubmitModal(false);
-                navigation.navigate('ClaimsTracking');
+                setLocation('/app/claims');
               }}
             >
               <Text style={styles.modalPrimaryText}>Go to claims</Text>

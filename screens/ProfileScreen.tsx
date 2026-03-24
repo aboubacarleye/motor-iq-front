@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from 'react-native-web';
 import { useNavigation } from '@react-navigation/native';
 import useClaimsStore from '../stores/claimsStore';
 

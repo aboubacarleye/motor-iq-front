@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Text } from 'react-native-web';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import ReportAccidentScreen from '../screens/ReportAccidentScreen';
@@ -61,17 +61,15 @@ function MainTabs() {
             paddingBottom: 10,
           },
           tabBarIcon: ({ color, size }) => {
-            let iconName: keyof typeof Ionicons.glyphMap = 'home';
-
-            if (route.name === 'Home') {
-              iconName = 'home';
-            } else if (route.name === 'Claims') {
-              iconName = 'file-tray-full-outline';
-            } else if (route.name === 'Profile') {
-              iconName = 'person-circle-outline';
-            }
-
-            return <Ionicons name={iconName} size={size} color={color} />;
+            const symbol =
+              route.name === 'Home'
+                ? '🏠'
+                : route.name === 'Claims'
+                ? '🗂️'
+                : route.name === 'Profile'
+                ? '👤'
+                : '⬜';
+            return <Text style={{ fontSize: size, color }}>{symbol}</Text>;
           },
         })}
       >

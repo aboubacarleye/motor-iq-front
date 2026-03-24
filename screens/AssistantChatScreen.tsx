@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+} from 'react-native-web';
+import { useLocation } from 'wouter';
 import useClaimsStore from '../stores/claimsStore';
 
 type Msg = { id: number; from: 'user' | 'ai'; text: string };
@@ -25,7 +25,7 @@ function agentPlanFromUser(text: string) {
 }
 
 export default function AssistantChatScreen() {
-  const navigation = useNavigation();
+  const [, setLocation] = useLocation();
   const profile = useClaimsStore((s) => s.profile);
   const vehicles = useClaimsStore((s) => s.profile.vehicles);
   const addClaim = useClaimsStore((s) => s.addClaim);
@@ -126,7 +126,7 @@ export default function AssistantChatScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => setLocation('/app')}>
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>MotorIQ Assistant</Text>
@@ -195,10 +195,7 @@ export default function AssistantChatScreen() {
           </View>
 
           <View style={styles.toolsRow}>
-            <TouchableOpacity
-              style={styles.secondarySmall}
-              onPress={() => navigation.navigate('ReportAccident' as never)}
-            >
+            <TouchableOpacity style={styles.secondarySmall} onPress={() => setLocation('/app/report')}>
               <Text style={styles.secondarySmallText}>Start guided report</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.primarySmall} onPress={createMockClaim}>

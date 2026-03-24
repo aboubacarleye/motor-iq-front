@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native-web';
 import { ExtendedClaim } from '../stores/claimsStore';
 
 interface Props {

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Claim, Vehicle } from '../types';
 
 export type ClaimStatus =
@@ -180,7 +179,7 @@ const useClaimsStore = create<ClaimsState>()(
     }),
     {
       name: 'motoriq-claims-store',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => state,
     },
   ),

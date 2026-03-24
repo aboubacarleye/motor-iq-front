@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
+import { View, Text, TextInput } from 'react-native-web';
+const Alert = { alert: (msg: string) => window.alert(msg) } as const;
+const Button = (props: any) => {
+  return (
+    <button onClick={props.onPress} style={{ padding: 10, borderRadius: 8, background: '#111827', color: '#fff' }}>
+      {props.title}
+    </button>
+  );
+};
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';

@@ -5,19 +5,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types';
+} from 'react-native-web';
+import { useLocation } from 'wouter';
 import useClaimsStore from '../stores/claimsStore';
 import PolicyCard from '../components/PolicyCard';
 import ClaimCard from '../components/ClaimCard';
 import TimelineProgress from '../components/TimelineProgress';
 
-type DashboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Dashboard'>;
-
 export default function DashboardScreen() {
-  const navigation = useNavigation<DashboardScreenNavigationProp>();
+  const [, setLocation] = useLocation();
   const profile = useClaimsStore((state) => state.profile);
   const claims = useClaimsStore((state) => state.claims);
   const theme = useClaimsStore((state) => state.theme);
@@ -39,17 +35,14 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => navigation.navigate('ReportAccident')}
-        >
+        <TouchableOpacity style={styles.primaryButton} onPress={() => setLocation('/app/report')}>
           <Text style={styles.primaryButtonText}>Report an Incident</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.magicButton}
           activeOpacity={0.95}
-          onPress={() => navigation.navigate('AssistantChat')}
+          onPress={() => setLocation('/app/assistant')}
         >
           <Text style={styles.magicButtonTitle}>Have an accident?</Text>
           <Text style={styles.magicButtonSubtitle}>Chat with our agent to guide you</Text>
@@ -58,11 +51,7 @@ export default function DashboardScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Active Policy</Text>
           <PolicyCard policy={profile.policy} />
-          <TouchableOpacity
-            style={styles.upgradeBanner}
-            activeOpacity={0.9}
-            onPress={() => navigation.navigate('UpgradeInsurance')}
-          >
+          <TouchableOpacity style={styles.upgradeBanner} activeOpacity={0.9} onPress={() => setLocation('/app/upgrade')}>
             <Text style={styles.upgradeTitle}>Upgrade your coverage</Text>
             <Text style={styles.upgradeSubtitle}>
               Get enhanced protection, roadside assistance and faster claim processing.

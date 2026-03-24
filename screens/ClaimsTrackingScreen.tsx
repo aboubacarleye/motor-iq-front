@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native-web';
 import useClaimsStore, { ExtendedClaim } from '../stores/claimsStore';
 import TimelineProgress from '../components/TimelineProgress';
 
